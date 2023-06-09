@@ -140,7 +140,7 @@ def main(
                     f"{i:>7}{sensor_label:>15}{ts:>24}{dt:>30}{power:12.4f}{supply_volt:20.4f}{current:12.4f}"
                 )
 
-            i += 1
+            i = i + 1
     except KeyboardInterrupt:
         print("User ended program run")
         print("Writing to csv file...please wait")
