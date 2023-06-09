@@ -120,9 +120,9 @@ def main(
         i: int = get_test_id(testpath)
 
         if verbose:
-            i, sensor_label, ts, dt, power, voltage, current = csv_header
+            idx, sensor_label, ts, dt, power, voltage, current = csv_header
             print(
-                f"{i:>7}{sensor_label:>15}{ts:>24}{dt:>30}{power:>12}{voltage:>20}{current:>12}"
+                f"{idx:>7}{sensor_label:>15}{ts:>24}{dt:>30}{power:>12}{voltage:>20}{current:>12}"
             )
 
         while True:
@@ -140,7 +140,7 @@ def main(
                     f"{i:>7}{sensor_label:>15}{ts:>24}{dt:>30}{power:12.4f}{supply_volt:20.4f}{current:12.4f}"
                 )
 
-            i = i + 1
+            i += 1
     except KeyboardInterrupt:
         print("User ended program run")
         print("Writing to csv file...please wait")
