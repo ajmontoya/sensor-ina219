@@ -67,15 +67,6 @@ def convert_to_datetime(ts: float) -> str:
     help="Name of csv file (default is 'test')",
 )
 @click.option(
-    "-c",
-    "--count",
-    "count",
-    type=int,
-    default=10,
-    show_default=True,
-    help="Number of test samples",
-)
-@click.option(
     "-t",
     "--tests",
     "tests",
@@ -102,7 +93,7 @@ def convert_to_datetime(ts: float) -> str:
     help="Output directory for test results",
 )
 def main(
-    filename: str, count: int, tests: tuple[tuple[str, str]], verbose: bool, output: str
+    filename: str, tests: tuple[tuple[str, str]], verbose: bool, output: str
 ) -> None:
     ina_map: dict[str, INA219] = create_ina_map(tests)
     if verbose:
@@ -126,9 +117,15 @@ def main(
     ]
 
     try:
-        i: int = 0
-        testid: int = get_test_id(testpath)
-        while i < count:
+        i: int = get_test_id(testpath)
+
+        if verbose:
+            i, sensor_label, ts, dt, power, voltage, current = csv_header
+            print(
+                f"{i:>7}{sensor_label:>15}{ts:>24}{dt:>30}{power:>12}{voltage:>20}{current:>12}"
+            )
+
+        while True:
             for sensor_label, ina in ina_map.items():
                 ts: float = time.time()
                 dt: str = convert_to_datetime(ts)
@@ -136,25 +133,18 @@ def main(
                 supply_volt: float = ina.supply_voltage()
                 current: float = ina.current()
 
-                samples.append(
-                    (testid, sensor_label, ts, dt, power, supply_volt, current)
+                samples.append((i, sensor_label, ts, dt, power, supply_volt, current))
+
+            if verbose:
+                print(
+                    f"{i:>7}{sensor_label:>15}{ts:>24}{dt:>30}{power:12.4f}{supply_volt:20.4f}{current:12.4f}"
                 )
 
             i += 1
-
-        write_to_csv(csv_header, samples, testpath)
-        if verbose:
-            testid, sensor_label, ts, dt, power, voltage, current = csv_header
-            print(
-                f"{testid:>7}{sensor_label:>15}{ts:>24}{dt:>30}{power:>12}{voltage:>20}{current:>12}"
-            )
-            for sample in samples:
-                testid, sensor_label, ts, dt, power, voltage, current = sample
-                print(
-                    f"{testid:>7}{sensor_label:>15}{ts:>24}{dt:>30}{power:12.4f}{voltage:20.4f}{current:12.4f}"
-                )
     except KeyboardInterrupt:
         print("User ended program run")
+        print("Writing to csv file...please wait")
+        write_to_csv(csv_header, samples, testpath)
         sys.exit(0)
     except DeviceRangeError as dev_err:
         print(f"Error in device's range: {dev_err}, program shutting down")
